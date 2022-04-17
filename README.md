@@ -1,4 +1,3 @@
-<p align="center"><img src="https://i.imgur.com/xMMO9xM.png" width=70%></p>
 <p align="center"><img src="https://i.imgur.com/sKZJ5tV.png" width=60% /></p>
 <p align="center">A fully customizable shared-resources based dashboard for pterodactyl hosting services</p>
 <p align="center"><img src="https://discord.com/api/guilds/854046209399455744/widget.png?style=shield" />
@@ -8,28 +7,31 @@
 All installation, add-ons tutorials and other stuff are available in the documentation!
 
 # 👋 Services using ShadowsDash
-[OptikServers.com - Free 24/7 server hosting](https://my.optikservers.com)
+Want your host litsted here? Send an email to **contact@xshadow.me**.
 
 # 🗃️ Base features
 Theses features are the basic ones. In the future, more features are likely to come.
 | Feature               | Available |
 |-----------------------|-----------|
 | Server creation       | ✔️         |
-| Server editing        | ❌         |
+| Server editing        | ✔️         |
 | Server deletion       | ✔️         |
 | Panel credentials     | ✔️         |
 | Login                 | ✔️         |
 | Registering           | ✔️         |
+| Login queue           | ✔️         |
 | Discord oAuth handler | ✔️         |
 | Queue system          | ✔️         |
 | Earning coins         | ✔️ (Selection Menu) |
-| Resources shop        | ❌         |
+| Resources shop        | ✔️         |
 | Full customization    | ✔️         |
 | Full navbar control   | ✔️         |
 | Full login control    | ✔️         |
+| Log system            | ✔️         |
+| VIP queue             | ✔️         |
 
-# 🥇 Alpha version
-Welcome to the ALPHA version of Shadow's Dash! If you find a bug, report it asap!
+# 🥇 Beta version
+Welcome to the BETA version of Shadow's Dash! If you find a bug, report it asap!
 
 # 🎨 Frontend
 We are using argon free as a frontend. You can change that! Read the documentation to learn more.
@@ -38,12 +40,13 @@ We are using argon free as a frontend. You can change that! Read the documentati
 I'm open to all contributions! Feel free to help! :)
 
 # 💸 Financial support
-I do not want money from what I code...
-No, really man... Dang if you really want to...
-You can donate to me <a href="https://donate.shadow-baguet.xyz">right here</a>
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3I87ZFES)
 
 # Shoutouts
 Big shoutout to MythicalKitten, Bartosz1, BlackKitten, Daftscientist, Emerald Mike, honk, RobusOfficial, tlkh40 and Will for their cool support.
 Shoutout to JOSH for some parts of his code.
+
+
+Oh ! And i'm also looking for paid work. If you like what I do, make sure to visit https://xshadow.me and send me an email. I would love to work with you !
 
 Take a free baguette 🥖

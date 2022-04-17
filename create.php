@@ -2,7 +2,8 @@
 require("require/page.php");
 
 $userdb = mysqli_query($cpconn, "SELECT * FROM users where discord_id = '". $_SESSION["user"]->id. "'")->fetch_object();
-$isDonator = false;
+$isDonator = $cpconn->query("SELECT * FROM private_node WHERE uid = '$userdb->discord_id'")->num_rows;
+
 ?>
 <!-- Header -->
 <div class="header bg-primary pb-6">
@@ -18,6 +19,9 @@ $isDonator = false;
                         </ol>
                     </nav>
                 </div>
+                <div class="col-lg-6 col-5 text-right">
+                    <button class="btn btn-sm btn-neutral" id="chksrvslots" onClick="seeServerSlots();">Only check server slots</button>
+                </div>
             </div>
         </div>
     </div>
@@ -26,8 +30,16 @@ $isDonator = false;
 <!-- Page content -->
 <div class="container-fluid mt--6">
     <div class="row justify-content-center">
+    <div class="col-md-12">
+        <center>
+                <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8751501047173409" crossorigin="anonymous"></script>
+                <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8751501047173409" data-ad-slot="4533960620" data-ad-format="auto" data-full-width-responsive="true"></ins>
+                <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+                <br><br>
+        </center>
+            </div>
         <div class="col-lg-8 card-wrapper">
-            <div class="card">
+            <div class="card" id="stepsCard">
                 <div class="card-header">
                     <h3 class="mb-0"><img src="https://i.imgur.com/F8TP5Tx.png" width="30"> Create a new server</h3>
                 </div>
@@ -60,6 +72,14 @@ $isDonator = false;
                 unset($_SESSION["error"]);
             }
             ?>
+            <center>                    
+            <div class="col-md-12">
+            <br><br>
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8751501047173409" crossorigin="anonymous"></script>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8751501047173409" data-ad-slot="5459512561" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            <br><br>
+        </div></center>
             <div id="alert"></div>
             <!--
                 LOADING CARD
@@ -99,15 +119,15 @@ $isDonator = false;
                         </div>
                         <div class="mb-3">
                             <label for="memory" class="form-label">Amount of RAM (In MB)</label>
-                            <input type="number" id="memory" name="memory" class="form-control memory" value="1024" required>
+                            <input type="number" id="memory" name="memory" class="form-control memory" value="<?= floor($userdb->memory/$userdb->server_limit) ?>" required>
                         </div>
                         <div class="mb-3">
-                            <label for="cores" class="form-label">CPU cores</label>
-                            <input type="number" id="cores" name="cores" class="form-control cores" value="0.6" required>
+                            <label for="cores" class="form-label">CPU limit (In %)</label>
+                            <input type="number" id="cores" name="cores" class="form-control cores" value="<?= floor($userdb->cpu/$userdb->server_limit) ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="disk" class="form-label">Amount of disk (In MB)</label>
-                            <input type="number" id="disk" name="disk" class="form-control disk" value="5000" required>
+                            <input type="number" id="disk" name="disk" class="form-control disk" value="<?= floor($userdb->disk_space/$userdb->server_limit) ?>" required>
                         </div>
                         <div class="mb-3">
                             <label for="ports" class="form-lavel">Additional Ports</label>
@@ -118,6 +138,7 @@ $isDonator = false;
                             <input type="number" id="databases" name="databases" class="form-control databases" value="0" required>
                         </div>
                         </p>
+                        <p><small>By proceeding to the next step, you agree to our <a href="<?= $_CONFIG["termsofservice"] ?>" target="_blank">terms and conditions</a>, and our <a href="<?= $_CONFIG["privacypolicy"] ?>">privacy policy</a>.</small></p>
                         <button class="btn btn-primary" id="step1btn" onClick="nextStep();">Next »</button>
                     </div>
                 </div>
@@ -127,7 +148,7 @@ $isDonator = false;
             --->
             <div class="card" id="step2" style="display: none;">
                 <div class="card-header">
-                    <h4 class="card-title">Select the location for your server</h4>
+                    <h4 class="card-title" id="selectNodeText">Select the location for your server</h4>
                 </div>
                 <div class="card-content collapse show" aria-expanded="true">
                     <div class="card-body">
@@ -143,8 +164,8 @@ $isDonator = false;
                                     $serversInQueue = mysqli_query($cpconn, "SELECT * FROM servers_queue WHERE location='" . $location["id"] . "'")->fetch_all(MYSQLI_ASSOC);
                                     ?><div class="col-sm">
                                         <?php
-                                        if ($location["status"] == "DONATOR") {
-                                            echo "<span class='badge badge-primary badge-glow' style='font-size: 15px;'>Donator only</span>";
+                                        if ($location["status"] == "PRIVATE") {
+                                            echo "<span class='badge badge-warning badge-glow' style='font-size: 15px;'>Private node</span>";
                                         }
                                         if ($location["status"] == "MAINTENANCE") {
                                             echo "<span class='badge badge-danger badge-glow' style='font-size: 15px;'>In maintenance</span>";
@@ -153,13 +174,13 @@ $isDonator = false;
                                         <br/>
                                         <img src="<?=$location["icon"] ?>" width="70">
                                         <h3><?= $location["name"] ?></h3>
-                        <p><b><?= $availableSlots ?></b> out of <b><?php echo $location["slots"]; ?></b> slots.<br/>
+                        <p><b><?= $availableSlots ?></b> out of <b><?php echo $location["slots"]; ?></b> slots left.<br/>
                             <b><?php echo count($serversInQueue); ?></b> servers in queue.</p>
                         <br/><br/>
                         <?php
-                        if ($location["status"] == "DONATOR") {
+                        if ($location["status"] == "PRIVATE") {
                             if ($isDonator == false) {
-                                echo '<button type="button" class="btn btn-danger" style="cursor: not-allowed;" disabled="1">Donators only</button>';
+                                echo '<button type="button" class="btn btn-danger" style="cursor: not-allowed;" disabled="1">Private node users only</button><br/><a href="/billing/buy/private">Buy private node access</a>';
                             }
                             else {
                                 echo '<button type="button" class="btn btn-primary" id="btnnode' . $location["id"] . '" onclick="selectNode(' . $location["id"] . ', this);">SELECT</button>';
@@ -168,18 +189,21 @@ $isDonator = false;
                         } elseif ($location["status"] == "MAINTENANCE") {
                             echo '<button type="button" class="btn btn-danger" style="cursor: not-allowed;" disabled="1">Maintenance</button>';
                         } else {
-                            echo '<button type="button" class="btn btn-primary" id="btnnode' . $location["id"] . '" onclick="selectNode(' . $location["id"] . ', this);">SELECT</button>';
+                            echo '<button type="button" class="btn btn-primary" id="btnnode' . $location["id"] . '" tag="nodeselectionbutton" onclick="selectNode(' . $location["id"] . ', this);">SELECT</button>';
                         }
                         ?>
                     </div>
                     <?php
                     }
+		    if (count($locations) == 0) {
+			echo "No nodes are available at the moment; Server creation might currently be disabled.";
+		    }
                     ?>
                 </div>
                 </div>
                 </center>
                 </p>
-                <button class="btn btn-primary" onclick="previousStep()">« Previous</button>
+                <button class="btn btn-primary" id="prevstep2btn" onclick="previousStep()">« Previous</button>
                 <button class="btn btn-primary" id="step2btn" disabled="1" onClick="nextStep();">Next »</button>
             </div>
         </div>
@@ -239,6 +263,14 @@ $isDonator = false;
         </div>
     </div>
 
+                </div>
+                <div class="col-md-12">
+            <br><br>
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8751501047173409" crossorigin="anonymous"></script>
+            <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-8751501047173409" data-ad-slot="8886130990" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+            <br><br>
+        </div>
             <!-- Footer -->
             <footer class="footer pt-0">
                 <div class="row align-items-center justify-content-lg-between">
@@ -309,6 +341,7 @@ $isDonator = false;
 
             var free_memory = null;
             var free_disk = null;
+            var free_cpu = null;
             var cpuLimit = null;
             name = name.toString();
             if (name.length == 0) {
@@ -354,14 +387,14 @@ $isDonator = false;
                     document.getElementById("step1").style.display = "block";
                 }
             });
-            await $.get("/api/user/cpulimit?userid=<?= $_SESSION["user"]->id ?>", function(data) {
-                cpuLimit = JSON.parse(data).cpuLimit;
+            await $.get("/api/user/freecpu?userid=<?= $_SESSION["user"]->id ?>", function(data) {
+                free_cpu = JSON.parse(data).freecpu;
 
-                if (cores > cpuLimit) {
+                if (cores > free_cpu) {
                     error = true;
                     var button = document.createElement("button");
                     button.className = "alert alert-danger";
-                    button.innerHTML = "You don't have enough cpu cores, you only have " + cpuLimit + "Cores. <span data-dismiss='alert' class='pull-right float-right'>✕</span>";
+                    button.innerHTML = "You don't have enough cpu limit, you only have <?= $userdb->cpu ?>% limit. <span data-dismiss='alert' class='pull-right float-right'>✕</span>";
                     button.style = "width:100%";
                     var div = document.getElementById("alert");
                     div.appendChild(button);
@@ -433,6 +466,26 @@ $isDonator = false;
             document.getElementById("loadingCard").style.display = "none";
             document.getElementById("step3").style.display = "block";
             document.getElementById("step4").style.display = "none";
+        }
+    }
+</script>
+<!-- Only check server slots -->
+<script>
+    function seeServerSlots() {
+        document.getElementById("loadingCard").style.display = "none";
+        document.getElementById("step1").style.display = "none";
+        document.getElementById("step2").style.display = "block";
+        document.getElementById("step2btn").style.display = "none";
+        document.getElementById("stepsCard").style.display = "none";
+        document.getElementById("selectNodeText").innerHTML = "Available nodes and slots";
+        document.getElementById("prevstep2btn").style.display = "none";
+        document.getElementById("chksrvslots").style.display = "none";
+        var ele = document.getElementsByTagName("Button");
+        if (ele.length > 0) {
+            for (i = 0; i < ele.length; i++) {
+                if (ele[i].type == "button")
+                    ele[i].style.display = "none";
+            }
         }
     }
 </script>

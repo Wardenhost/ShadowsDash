@@ -108,9 +108,8 @@ require("../require/config.php");
           <div class="card card-profile bg-secondary mt-5">
             <div class="card-body pt-5 px-5">
               <div class="text-center mb-4">
-                <img src="<?= $_CONFIG["logo_black"] ?>" style="width: 70%;" />
-                <h3>Welcome to <?= $_CONFIG["name"] ?>!</h3>
-                This dashboard will allow you to create, manage & delete your servers. It will also allow you to earn coins, and to buy more resources.
+                <h3 style="color: black;">Welcome to <?= $_CONFIG["name"] ?>!</h3>
+                <span style="color: black;">This dashboard will allow you to create, manage & delete your servers. It will also allow you to earn coins, and to buy more resources.</span>
                 <br/><br/>
                   <a href="/" class="btn btn-primary" style="width: 100%;">Continue</a>
               </div>
@@ -121,7 +120,7 @@ require("../require/config.php");
     </div>
   </div>
   <!-- Footer -->
-  <footer class="py-5" id="footer-main">
+  <!-- <footer class="py-5" id="footer-main">
     <div class="container">
       <div class="row align-items-center justify-content-xl-between">
         <div class="col-xl-6">
@@ -131,7 +130,7 @@ require("../require/config.php");
         </div>
       </div>
     </div>
-  </footer>
+  </footer> -->
   <!-- Argon Scripts -->
   <!-- Core -->
   <script src="/assets/vendor/jquery/dist/jquery.min.js"></script>

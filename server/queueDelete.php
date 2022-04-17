@@ -1,6 +1,7 @@
 <?php
 require("../require/config.php");
 require("../require/sql.php");
+require("../require/addons.php");
 session_start();
 
 if (!isset($_SESSION['loggedin'])) {
@@ -35,6 +36,7 @@ if ($serverInformation->type == 2) {
 if (mysqli_query($cpconn, "DELETE FROM servers_queue WHERE id = '" . mysqli_real_escape_string($cpconn, $_GET["server"]) . "'")) {
     header("location: /");
     $_SESSION['success'] = "Your server is no longer in queue!";
+    logClient("[Server queue deletion] <@" . $user->id . "> removed the server from queue with ID #" . $_GET["server"] . ".");
     die();
 }
 else {

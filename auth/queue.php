@@ -1,5 +1,6 @@
 <?php
 include("../require/config.php");
+include("../require/addons.php");
 $_SESSION["in_queue"] = 1;
 $lastlogin = file_get_contents("queue.txt");
 $oper = time() - $lastlogin;
@@ -7,6 +8,7 @@ $timeleft = $_CONFIG["loginCooldown"] - $oper;
 if ($timeleft <= 0) {
     $_SESSION["in_queue"] = 0;
     file_put_contents("queue.txt", time());
+    logClient("[Login queue] User left the login queue, and got redirected to Discord login.");
     header("Location: discord");
     die();
 }

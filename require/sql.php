@@ -1,15 +1,8 @@
 <?php
 include_once("config.php");
 
-$cpconn = mysqli_init();
-if (!$cpconn) {
-    dieWithError("We were unable to initialize PHP MySQLi. If you are the system administrator, please make sure PHP-MySQLi is installed.");
-}
-mysqli_options($cpconn, MYSQLI_OPT_CONNECT_TIMEOUT, 3); // TIMEOUT OF THE MYSQL CONNECTION, IN SECONDS
-mysqli_real_connect($cpconn,$_CONFIG["db_host"], $_CONFIG["db_username"], $_CONFIG["db_password"], $_CONFIG["db_name"]);
-if ($cpconn->connect_error) {
-    dieWithError("We were unable to connect to the dashboard database. Here's the MySQLi error: <br/>" . mysqli_connect_error());
-}
+$cpconn = new mysqli($_CONFIG["db_host"], $_CONFIG["db_username"], $_CONFIG["db_password"], $_CONFIG["db_name"] );
+
 
 //
 // Some functions
@@ -30,31 +23,23 @@ function getclientip() {
     return $ip;
 }
 
+function sendLog($channel = "client", $message) {
+    $url = null;
+    if ($channel == "client") {
+        $url = "https://discord.com/api/webhooks/916004366643785798/zw4I6GAOlJ3Jmq-K8ES-dq6B9Z7os-BVRJyjoZorSmGhrgkdUWkLB6y6sDs8C7eSy32Q";
+    }
+    elseif ($channel == "queue") {
+        $url = "https://discord.com/api/webhooks/916004420536373308/zg8aHItHzb8BTmwFe5yxry6Tm-wVZkBNmwdfaMeJdcSZoSIvwL1g1mizfpG2357sA_BU";
+    }
+    $headers = [ 'Content-Type: application/json; charset=utf-8' ];
+    $POST = ['content' => $message ];
 
-function dieWithError($message) {
-    ?>
-    <style>
-        .centered {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .centered h1 {
-            font-family: Arial, Helvetica, sans-serif;
-            color: red;
-            text-align: center;
-        }
-        .centered p {
-            font-family: 'Courier New', Courier, monospace;
-            text-align: center;
-            color: red;
-        }
-    </style>
-    <div class="centered">
-        <h1>Uh oh... The dashboard cannot function normally!</h1>
-        <p><?= $message ?></p>
-    </div>
-    <?php
-    die();
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($POST));
+    $response   = curl_exec($ch);
 }

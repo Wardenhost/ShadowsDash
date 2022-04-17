@@ -216,6 +216,19 @@ if ($_POST['databases'] > $freeDatabases) {
     )));
 }
 $locid = $_POST['location'];
+if ($locid == 3) {
+    $donator = $cpconn->query("SELECT * FROM private_node WHERE uid = '$user->id'")->num_rows;
+    if ($donator == 0) {
+        die(json_encode(array(
+            'errors' => [
+                'code' => 'NotDonatorException',
+                'status' => 400,
+                'detail' => "You don't have private node access."
+            ],
+            'success' => false
+        )));
+    }
+}
 $doeslocationexist = mysqli_query($cpconn, "SELECT * FROM locations WHERE id = '" . mysqli_real_escape_string($cpconn, $locid) . "'");
 if ($doeslocationexist->num_rows == 0) {
     die(json_encode(array(
@@ -249,6 +262,7 @@ $xtraports = $_POST['ports'];
 $location = $_POST['location'];
 $databases = $_POST['databases'];
 $created = time();
+logClient("[Server creation] <@" . $user->id . "> added a server in the queue called ``$name`` on location #$location.");
 if (mysqli_query($cpconn, "INSERT INTO servers_queue (`name`, `ram`, `disk`, `cpu`, `xtra_ports`, `databases`, `location`, `ownerid`, `type`, `egg`, `puid`, `created`) VALUES ('" . mysqli_real_escape_string($cpconn, $name) . "', '" . mysqli_real_escape_string($cpconn, $ram) . "', '" . mysqli_real_escape_string($cpconn, $disk) . "', '" . mysqli_real_escape_string($cpconn, $cpu) . "', '" . mysqli_real_escape_string($cpconn, $xtraports) . "', '" . mysqli_real_escape_string($cpconn, $databases) . "', '" . mysqli_real_escape_string($cpconn, $location) . "', '" . mysqli_real_escape_string($cpconn, $user->id) . "', '$queue', '" . mysqli_real_escape_string($cpconn, $eggid) . "', '$userdb->panel_id', '$created')")) {
     die(json_encode(array(
         'success' => true

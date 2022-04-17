@@ -104,6 +104,11 @@ session_destroy();
       </div>
     </div>
     <!-- Page content -->
+    <style>
+      h3,p {
+        color: black;
+      }
+    </style>
     <div class="container mt--8 pb-5">
       <div class="row justify-content-center">
         <div class="col-lg-5 col-md-7">

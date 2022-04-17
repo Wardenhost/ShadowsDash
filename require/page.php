@@ -1,7 +1,11 @@
 <?php
 session_start();
 if (!isset($_SESSION['loggedin'])) {
+  if ($_SERVER["REQUEST_URI"] != "/") {
+    $_SESSION["redirafterlogin"] = $_SERVER["REQUEST_URI"];
+  }
   header("Location: /auth/login");
+  
 }
 include_once("sql.php");
 require("addons.php");
@@ -20,7 +24,6 @@ $userdb = $cpconn->query("SELECT * FROM users WHERE discord_id = '" . mysqli_rea
 * Copyright  Creative Tim (http://www.creative-tim.com)
 * Coded by www.creative-tim.com
 =========================================================
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 -->
 <!DOCTYPE html>
 <html>
@@ -37,14 +40,15 @@ $userdb = $cpconn->query("SELECT * FROM users WHERE discord_id = '" . mysqli_rea
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
   <!-- Icons -->
   <link rel="stylesheet" href="/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+  <!-- <link rel="stylesheet" href="sweetalert2.min.css"> -->
   <link rel="stylesheet" href="/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
   <!-- Argon CSS -->
-  <link rel="stylesheet" href="/assets/css/argon.css?v=1.2.0" type="text/css">
+  <link rel="stylesheet" href="/assets/css/argon.css" type="text/css">
 </head>
 
 <body>
   <!-- Sidenav -->
-  <nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-light bg-white" id="sidenav-main">
+  <nav class="sidenav navbar navbar-vertical  fixed-left  navbar-expand-xs navbar-dark bg-dark" id="sidenav-main">
     <div class="scrollbar-inner">
       <!-- Brand -->
       <div class="sidenav-header  d-flex  align-items-center">
@@ -86,14 +90,14 @@ $userdb = $cpconn->query("SELECT * FROM users WHERE discord_id = '" . mysqli_rea
           <!-- Heading -->
           <h6 class="navbar-heading p-0 text-muted">
             <span class="docs-normal">Links</span>
-            <span class="docs-mini">L</span>
           </h6>
           <!-- Navigation -->
           <ul class="navbar-nav mb-md-3">
             <li class="nav-item">
+
               <a class="nav-link" href="<?= $_CONFIG["ptero_url"] ?>" target="_blank">
                 <i class="fas fa-gamepad"></i>
-                <span class="nav-link-text">Getting started</span>
+                <span class="nav-link-text">Game panel</span>
               </a>
             </li>
             <li class="nav-item">
@@ -144,7 +148,13 @@ $userdb = $cpconn->query("SELECT * FROM users WHERE discord_id = '" . mysqli_rea
               </a>
             </li>
             <li class="nav-item" style="color: white;">
-                <?= $userdb["coins"] ?> coins.
+            <?php
+            if (isset($premium_page)) {
+             echo "Available: £" . $userdb['balance'];
+            }else{
+             echo $userdb['coins'] . " coins";
+            }
+            ?>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

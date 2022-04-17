@@ -1,8 +1,10 @@
 <?php
 require("../require/page.php");
 
+
 $userdb = mysqli_query($cpconn, "SELECT * FROM users where discord_id = '". $_SESSION["user"]->id. "'")->fetch_object();
 if (isset($_POST['reset_creds'])) {
+  
     $username = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword?l=20");
     $password = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword?l=20");
 
@@ -32,12 +34,14 @@ if (isset($_POST['reset_creds'])) {
     if (!isset($updateUserResult['object'])) {
         if(curl_errno($ch)){
             $_SESSION["error"] = "An error occured while doing the request: " . curl_error($ch);
+            logClient("[Password reset] <@" . $_SESSION["user"]->id . "> try to reset his password, but an error occured: ```" . curl_error($ch) . "```");
         }
     }
     else {
         $cpconn->query("UPDATE users SET panel_username = '" . $username . "' WHERE discord_id = '" . $_SESSION["user"]->id . "'");
         $cpconn->query("UPDATE users SET panel_password = '$password' WHERE discord_id = '"  . $_SESSION["user"]->id . "'");
         $_SESSION["success"] = "Your password got changed successfully";
+        logClient("[Password reset] <@" . $_SESSION["user"]->id . "> resetted their password.");
     }
 }
 
@@ -102,13 +106,13 @@ for ($i = 1; $i <= strlen($password); $i++) {
                 </div>
             </div>
           </div>
-
-      <!-- Footer -->
-      <footer class="footer pt-0">
+    </div>
+  </div>
+        <footer class="footer pt-0">
         <div class="row align-items-center justify-content-lg-between">
           <div class="col-lg-6">
             <div class="copyright text-center  text-lg-left  text-muted">
-                &copy; 2021 <a href="https://xshadow.me" class="font-weight-bold ml-1" target="_blank">X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
+                &copy; 2022 <a href="https://xshadow.me" class="font-weight-bold ml-1" target="_blank">X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
             </div>
           </div>
           <div class="col-lg-6">
@@ -129,8 +133,6 @@ for ($i = 1; $i <= strlen($password); $i++) {
           </div>
         </div>
       </footer>
-    </div>
-  </div>
         <div class="modal fade" id="modal-confirmpasswordreset" tabindex="-1" role="dialog" aria-labelledby="modal-confirmpasswordreset" aria-hidden="true">
             <div class="modal-dialog modal-danger modal-dialog-centered modal-" role="document">
                 <div class="modal-content bg-gradient-danger">

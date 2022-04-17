@@ -1,6 +1,7 @@
 <?php
 require("../require/sql.php");
 require("../require/config.php");
+require("../require/addons.php");
 session_start();
 
 if (!isset($_SESSION['loggedin'])) {
@@ -16,7 +17,7 @@ if (!is_numeric($_GET["server"])) {
 /*
  * Check user owns server
  */
-$ownsServer = mysqli_query($cpconn, "SELECT * FROM servers WHERE pid = '" . mysqli_real_escape_string($cpconn, $_GET["server"]) . "'");
+$ownsServer = mysqli_query($cpconn, "SELECT * FROM servers WHERE pid = '" . mysqli_real_escape_string($cpconn, $_GET["server"]) . "' AND uid = '"  . $_SESSION['uid'] . "'");
 if ($ownsServer->num_rows == 0) {
     $_SESSION['error'] = "You don't have permission to delete this server or it doesn't exist.";
     header("location: /");
@@ -27,12 +28,12 @@ if ($ownsServer->num_rows == 0) {
 */
 /* @var $panel_url */
 /* @var $panel_apikey */
-$delete_server = curl_init("https://" . $panel_url . "/api/application/servers/" . $_GET["server"] . "/force");
+$delete_server = curl_init($_CONFIG["ptero_url"] . "/api/application/servers/" . $_GET["server"] . "/force");
 curl_setopt($delete_server, CURLOPT_CUSTOMREQUEST, "DELETE");
 $headers = array(
     'Accept: application/json',
     'Content-Type: application/json',
-    "Authorization: Bearer $panel_apikey"
+    "Authorization: Bearer " . $_CONFIG["ptero_apikey"]
 );
 curl_setopt($delete_server, CURLOPT_HTTPHEADER, $headers);
 curl_setopt($delete_server, CURLOPT_RETURNTRANSFER, 1);
@@ -44,7 +45,8 @@ if (!empty($result)) {
     die();
 }
 if (mysqli_query($cpconn, "DELETE FROM servers WHERE pid = '" . $_GET["server"]. "'")) {
-    $_SESSION['success'] = "Deleted server.";
+    $_SESSION['success'] = "Deleted server. ";
+    logClient("[Server deletion] <@" . $user->id . "> deleted the server with PID #" . $_GET["server"] . ".");
     header("location: /");
     die();
 }

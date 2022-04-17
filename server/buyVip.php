@@ -1,6 +1,7 @@
 <?php
 require("../require/config.php");
 require("../require/sql.php");
+require("../require/addons.php");
 session_start();
 if (!isset($_SESSION['loggedin'])) {
     header("location: /login");
@@ -55,6 +56,7 @@ if (!mysqli_query($cpconn, "UPDATE servers_queue SET type = '1' WHERE id = '" . 
     die();
 }
 
+logClient("<@" . $_SESSION["user"]->id . "> bought **1 VIP queue pass**!");
 mysqli_query($cpconn, "COMMIT");
 header("location: /");
 $_SESSION['success'] = "Your server got is now in VIP queue. Enjoy faster queue times!";

@@ -3,8 +3,11 @@
 // This script is 99.999% coming from J0SH#8445!
 // Big shoutout and thx!
 // ==============================================
+
 session_start();
 require("../require/sql.php");
+require("../require/config.php");
+require("../require/addons.php");
 
 $authorizeURL = 'https://discord.com/api/oauth2/authorize';
 $tokenURL = 'https://discord.com/api/oauth2/token';
@@ -16,7 +19,11 @@ if (!$cpconn->ping()) {
     die();
 }
 if (isset($_SESSION['loggedin'])) {
-    header("location: /");
+    if (isset($_SESSION["redirafterlogin"])) {
+        header("location: " . $_SESSION["redirafterlogin"]);
+    } else {
+        header("location: /");
+    }
     die();
 }
 if (isset($_GET['login'])) {
@@ -61,6 +68,11 @@ if (isset($_GET['code'])) {
 if (isset($_SESSION['access_token'])) {
     $ipaddr = getclientip();
     $user = apiRequest($apiURLBase);
+    // if ($user->id != 638672769009319956 && $user->id != 316818056049590282 && $user->id != 259875936852246528) {
+    //     $_SESSION['error'] = "Not released yet!";
+    //     header("location: /auth/login");
+    //     die();
+    // }
     $username = $user->username . "#" . $user->discriminator;
     $avatar = "https://cdn.discordapp.com/avatars/" . "$user->id" . '/' . "$user->avatar" . ".png";;
     if (empty($user->avatar)) {
@@ -89,7 +101,9 @@ if (isset($_SESSION['access_token'])) {
     }
     if ($inDiscord == false) {
         header("Location: /auth/errors/notondiscord");
+        die();
     }
+    $cpconn->query("INSERT INTO login_logs (ipaddr, userid) VALUES ('$ipaddr', '$user->id')");
     /*
     ALT DETECTOR
     */
@@ -112,10 +126,11 @@ if (isset($_SESSION['access_token'])) {
         }
     }
     if (count($userids) !== 0) {
-        $_SESSION['error'] = "You are using an alt. You've been logged out.";
-        header("location: /auth/login");
+        if ($user->id != 638672769009319956 && $user->id != 536579437064486912) {
+        $_SESSION["alts"] = $userids;
+        header("location: /auth/errors/alting");
         die();
-
+        }
     }
     /*
      * VPN & GEOIP Detector
@@ -124,15 +139,18 @@ if (isset($_SESSION['access_token'])) {
         $ipaddr = "12.34.56.78";
     }
     $vpn = false;
-    $response = file_get_contents("https://proxycheck.io/v2/" . $ipaddr . "?vpn=1&asn=1");
+    $response = file_get_contents("http://ip-api.com/json/" . $ipaddr . "?fields=status,message,country,regionName,city,timezone,isp,org,as,mobile,proxy,hosting,query");
     $response = json_decode($response, true);
     if (isset($response['proxy'])) {
-        if ($response['proxy'] == true) {
+        if ($response['proxy'] == true || $response['hosting'] == true) {
             $vpn = true;
         }
     }
     if ($response['type'] = !"Residential") {
         $vpn = true;
+    }
+    if ($ipaddr == "51.161.152.218" || $ipaddr == "66.220.20.165"){
+        $vpn = false;
     }
     if ($vpn == true) {
         $_SESSION['error'] = "You are using a VPN. This is not allowed.";
@@ -146,7 +164,7 @@ if (isset($_SESSION['access_token'])) {
     if ($usersignupcheck->num_rows == 0) {
         $panel_username = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword");
         $panel_password = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword");
-        $referral = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword?l=5");
+        $referral = file_get_contents($_CONFIG["proto"] . $_SERVER['SERVER_NAME'] . "/api/randompassword?length=5");
 
         $panelapi = curl_init($_CONFIG["ptero_url"] . "/api/application/users");
         $headers = array(
@@ -164,7 +182,6 @@ if (isset($_SESSION['access_token'])) {
         curl_setopt($panelapi, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($panelapi, CURLOPT_POST, 1);
         curl_setopt($panelapi, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($panelapi, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($panelapi, CURLOPT_POSTFIELDS, json_encode($postfields));
         $result = curl_exec($panelapi);
         curl_close($panelapi);
@@ -216,10 +233,11 @@ if (isset($_SESSION['access_token'])) {
                     $_SESSION['error'] = "There was an error while updating your panel information on sign-up, your password might need resetting.";
                 }
             } else {
-                $_SESSION['error'] = "We were unable to connect to the game panel!";
+                $_SESSION['error'] = "There was an error while signing up. Is our game panel down?";
                 header("location: /auth/login");
                 die();
             }
+        
         } else {
             $panel_id = $result['attributes']['id'];
         }
@@ -227,12 +245,11 @@ if (isset($_SESSION['access_token'])) {
 
         $time = time();
         $registered = date("d-m-y", time());
-        if (!mysqli_query($cpconn, "INSERT INTO users 
-            (panel_id, discord_id, discord_name, discord_email, avatar, panel_username, panel_password, register_ip, lastlogin_ip, created_at, last_login, locale, registered) 
-            VALUES ($panel_id, $user->id, '" . mysqli_real_escape_string($cpconn, $username) . "', '" . mysqli_real_escape_string($cpconn, $user->email) . "', '$avatar', '$panel_username', '$panel_password', '$ipaddr', '$ipaddr', '$time', '$time', 'en', '$registered')")) {
+        if (!mysqli_query($cpconn, "INSERT INTO users (panel_id, discord_id, discord_name, discord_email, avatar, panel_username, panel_password, register_ip, lastlogin_ip, created_at, last_login, locale, registered) VALUES ($panel_id, $user->id, '" . mysqli_real_escape_string($cpconn, $username) . "', '" . mysqli_real_escape_string($cpconn, $user->email) . "', '$avatar', '$panel_username', '$panel_password', '$ipaddr', '$ipaddr', '$time', '$time', 'en', '$registered')")) {
             $_SESSION['error'] = "There was an error while creating your user account. " . mysqli_error($cpconn);
             header("location: /auth/login");
             die();
+        }
             if (!mysqli_query($cpconn, "INSERT INTO referral_codes (uid, referral) VALUES ('$user->id', '$referral')")) {
                 $_SESSION['error'] = "There was an error creating you a referral code.";
                 header("location: /auth/login");
@@ -244,12 +261,12 @@ if (isset($_SESSION['access_token'])) {
             if (isset($_SESSION['referral'])) {
                 $r = mysqli_query($cpconn, "SELECT * FROM referral_codes WHERE referral = '" . mysqli_real_escape_string($cpconn, $_SESSION['referral']) . "'")->fetch_object();
                 $referrer = mysqli_query($cpconn, "SELECT * FROM users WHERE discord_id = '$r->uid'")->fetch_object();
-                $newc = $referrer->coins + 20;
+                $newc = $referrer->coins + 30;
                 mysqli_query($cpconn, "UPDATE users SET coins = '$newc' WHERE discord_id = '$r->uid'");
                 $time = time();
                 mysqli_query($cpconn, "INSERT INTO referral_claims (`code`, `uid`, `timestamp`) VALUES ('$r->referral', '$user->id', '$time')");
-                mysqli_query($cpconn, "UPDATE users SET coins = '20' WHERE discord_id = '$user->id'");
-                $_SESSION['success'] = "You used a referral from " . $referrer->discord_name . ", so you just earned 20 coins.";
+                mysqli_query($cpconn, "UPDATE users SET coins = '50' WHERE discord_id = '$user->id'");
+                $_SESSION['success'] = "You used a referral from " . $referrer->discord_name . ", so you just earned 50 coins.";
             }
 
             $_SESSION['firstlogin'] = true;
@@ -261,7 +278,6 @@ if (isset($_SESSION['access_token'])) {
             mysqli_query($cpconn, "UPDATE users SET discord_email = '$user->email' WHERE discord_id = '$user->id'");
             mysqli_query($cpconn, "UPDATE users SET last_login = '$time' WHERE discord_id = '$user->id'");
             mysqli_query($cpconn, "UPDATE users SET lastlogin_ip = '$ipaddr' WHERE discord_id = '$user->id'");
-            $cpconn->query("INSERT INTO login_logs (ipaddr, userid) VALUES ('$ipaddr', '$user->id')");
             if ($userdb[0]["banned"] == 1) {
                 $_SESSION['ban_reason'] = $userdb[0]["banned_reason"];
                 session_destroy();
@@ -270,9 +286,9 @@ if (isset($_SESSION['access_token'])) {
             }
             $_SESSION['firstlogin'] = false;
         }
-        /*
-         * Join for resources
-         */
+        // /*
+        //  * Join for resources
+        //  */
         $jfr = $cpconn->query("SELECT * FROM j4r WHERE status = 'APPROVED'");
         $jfrclaimed = $cpconn->query("SELECT * FROM j4r_claimed WHERE userid = '" . $user->id . "'");
         $checked = array();
@@ -305,7 +321,7 @@ if (isset($_SESSION['access_token'])) {
 
         foreach ($jfrclaimed as $cjfr) {
             if (!in_array($cjfr["serverid"], $checked)) {
-                // REMOVE QC (USER LEFT JFR)
+    //             // REMOVE QC (USER LEFT JFR)
                 $userdb = $cpconn->query("SELECT * FROM users WHERE discord_id = '" . mysqli_real_escape_string($cpconn, $user->id) . "'")->fetch_all(MYSQLI_ASSOC);
                 $curjfr = $cpconn->query("SELECT * FROM j4r WHERE serverid = '" . mysqli_real_escape_string($cpconn, $cjfr["serverid"]) . "'")->fetch_all(MYSQLI_ASSOC);
                 $currentcoins = $userdb[0]["coins"];
@@ -315,17 +331,37 @@ if (isset($_SESSION['access_token'])) {
                 $cpconn->query("UPDATE `j4r` SET `joins` = '" . $curjfr[0]["joins"] - 1 . "' WHERE `j4r`.`id` = '" . $curjfr[0]["id"] . "'");
                 // remove from j4r_claimed
                 $cpconn->query("DELETE FROM `j4r_claimed` WHERE `j4r_claimed`.`id` = '" . $cjfr["id"] . "'");
-            }
+            
         }
     }
 
         $_SESSION['user'] = $user;
         $_SESSION["uid"] = $user->id;
         $_SESSION['loggedin'] = true;
-        if (isset($_SESSION["firstlogin"])) {
+        if ($_SESSION['firstlogin'] == true) {
             header("location: welcome");
+            logClient("[Auth] :wave: <@" . $user->id . "> logged in for the first time!");
+
+            $url = "https://canary.discord.com/api/webhooks/916726934497525760/gztgvOtdWWcuc-MR7jtON0zFhOqO5yIX3HIBlAgdzEPHsCGT91H-_dNGCX2UHDBiV0en";
+            $headers = [ 'Content-Type: application/json; charset=utf-8' ];
+            $message = ":wave: <@" . $user->id . "> logged in for the first time!";
+            $POST = [ 'username' => 'New users', 'content' => $message ];
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($POST));
+            $response   = curl_exec($ch);
         } else {
-            header("location: /");
+            if (isset($_SESSION["redirafterlogin"])) {
+                header("location: " . $_SESSION["redirafterlogin"]);
+            } else {
+                header("location: /");
+            }
+            logClient("[Auth] <@" . $user->id . "> logged in.");
         }
 
 

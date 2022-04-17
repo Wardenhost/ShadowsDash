@@ -18,8 +18,8 @@ session_start();
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="Start your development with a Dashboard for Bootstrap 4.">
-  <meta name="author" content="Creative Tim">
+  <meta name="description" content="OptikServers is a free server hosting.">
+  <meta name="author" content="OptikServers">
   <title><?= $_CONFIG["name"] ?> - Login</title>
   <!-- Favicon -->
   <link rel="icon" href="/assets/img/brand/favicon.png" type="image/png">
@@ -115,17 +115,32 @@ session_start();
             <?php
             unset($_SESSION["error"]);
         }
+        if (isset($_SESSION["success"])) {
+          ?>
+          <div class="alert alert-success" role="alert">
+            <strong>Success!</strong> <?= $_SESSION["success"] ?>
+          </div>
+          <?php
+          unset($_SESSION["success"]);
+      }
         ?>
           <div class="card bg-secondary border-0 mb-0">
             <div class="card-header bg-transparent pb-5">
-              <div class="text-muted text-center mt-2 mb-3"><small id="signininfotext">Sign in with</small></div>
+              <div class="text-muted text-center mt-2 mb-3"><small>Sign in with</small></div>
               <div class="btn-wrapper text-center">
-                <img src="/assets/img/loading.gif" width="64" id="loadingimg" style="display: none;"/>
-                <a href="discord" class="btn btn-neutral btn-icon" onClick="showLoading()" id="loginButton">
+                <a href="discord" class="btn btn-neutral btn-icon" onClick="showLoading()">
                   <span class="btn-inner--icon"><img src="https://i.imgur.com/7gT8i9O.png"></span>
-                  <span class="btn-inner--text"> Discord</span>
+                  <span class="btn-inner--text"><img src="/assets/img/loading.gif" width="20" id="loadingimg" style="display: none;"/> Discord</span>
                 </a>
-                <br/><br/>
+                <br/>
+                <small><font color="gray">
+                <?php
+                if (isset($_SESSION["redirafterlogin"])) {
+                  echo "You will be automatically redirected to <b>" . $_SESSION["redirafterlogin"] . "</b>.";
+                }
+                ?>
+                </font></small>
+                <br/>
                 <small><font color="gray">By logging in, you agree to our <a href="<?= $_CONFIG["privacypolicy"] ?>">Privacy Policy</a> and our <a href="<?= $_CONFIG["termsofservice"] ?>">Terms Of Service</a>.</font></small>
               </div>
             </div>
@@ -135,24 +150,22 @@ session_start();
     </div>
   </div>
   <!-- Footer -->
-  <footer class="py-5" id="footer-main">
+  <!-- <footer class="py-5" id="footer-main">
     <div class="container">
       <div class="row align-items-center justify-content-xl-between">
         <div class="col-xl-6">
           <div class="copyright text-center text-xl-left text-muted">
-            &copy; 2021 <a href="https://xshadow.me" class="font-weight-bold ml-1" target="_blank">X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
+            &copy; 2022 <a href="https://xshadow.me" class="font-weight-bold ml-1" target="_blank">X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
           </div>
         </div>
       </div>
     </div>
-  </footer>
+  </footer> -->
   <!-- Argon Scripts -->
   <!-- Core -->
   <script>
       function showLoading() {
-          document.getElementById("signininfotext").innerHTML = "Logging in...";
           document.getElementById("loadingimg").style.display = "inline";
-          document.getElementById("loginButton").style.display = "none";
       }
   </script>
   <script src="/assets/vendor/jquery/dist/jquery.min.js"></script>
@@ -162,8 +175,6 @@ session_start();
   <script src="/assets/vendor/jquery-scroll-lock/dist/jquery-scrollLock.min.js"></script>
   <!-- Argon JS -->
   <script src="/assets/js/argon.js?v=1.2.0"></script>
-  <!-- Demo JS - remove this in your project -->
-  <script src="/assets/js/demo.min.js"></script>
 </body>
 
 </html>

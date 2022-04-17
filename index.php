@@ -215,6 +215,7 @@ foreach($servers_in_queue as $server) {
                     </div>
                 </div>
             </div>
+            
           </div>
         <!---
         CARD 2
@@ -465,6 +466,18 @@ foreach($servers_in_queue as $server) {
                                             echo '<span class="badge badge-dot mr-4"><i class="bg-warning"></i><span class="status">Installing</span></span>';
                                         } elseif ($server["suspended"] == true) {
                                             echo '<span class="badge badge-dot mr-4"><i class="bg-warning"></i><span class="status">Suspended</span></span>';
+                                        } else {
+                                            echo '<span class="badge badge-dot mr-4"><i class="bg-success"></i><span class="status">Installed</span></span>';
+                                            $hibernating = file_get_contents($_CONFIG["proto"] . $_SERVER["SERVER_NAME"] . "/api/user/hibwhitelist?serverid=" . $server['uuid']);
+                                            if ($egg["hibernation"] == 1) {
+                                                if ($hibernating != 1) {
+                                                    echo '<img src="https://i.imgur.com/K6S8u5h.png" width="27" /> Hibernation enabled <button type="button" class="btn btn-primary btn-sm" data-container="body" data-toggle="popover" data-placement="top" data-content="The hibernation system is really simple, when no players are online, your server will unload chunks and plugins to reduce CPU usage. You can remove this limitation by purchasing a bypass, to use plugins like Dynmap or other plugins that require to run when no players are online.">?</button>';
+                                                } else {
+                                                    echo '<img src="https://i.imgur.com/uMeSsAo.png" width="27" /> Hibernation disabled';
+                                                }
+                                            } else {
+                                                echo '<img src="https://i.imgur.com/uMeSsAo.png" width="27" /> No hibernation for this egg';
+                                            }
                                         }
                                         ?>
                                     </td>
@@ -501,7 +514,7 @@ foreach($servers_in_queue as $server) {
         <div class="row align-items-center justify-content-lg-between">
           <div class="col-lg-6">
             <div class="copyright text-center  text-lg-left  text-muted">
-                &copy; 2021 <a href="https://github.com/ShadowsDash" class="font-weight-bold ml-1" target="_blank">Shadow's Dash - X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
+                &copy; 2022 <a href="https://github.com/ShadowsDash" class="font-weight-bold ml-1" target="_blank">Shadow's Dash - X_Shadow_#5962</a> - Theme by <a href="https://creativetim.com" target="_blank">Creative Tim</a>
             </div>
           </div>
           <div class="col-lg-6">

@@ -1,14 +1,40 @@
 <?php
+if (!empty($_SERVER["SERVER_NAME"])) {
+    die("What are you doing here");
+}
 echo "====== ShadowsDash queue ======\n\n";
 echo "[INFO/loader] Loading files...\n";
-require("../require/config.php");
-require("../require/sql.php");
+require(__DIR__ . "/../require/config.php");
+require(__DIR__ . "/../require/sql.php");
 $timeAtStart = time();
+$i = 0;
+$nodesFull = 0;
+function logQueue($message) {
+    $url = "";
+    if (empty($url)) {
+        echo "\033[39m" . PHP_EOL;
+        echo "\033[33m[WARNING] NO LOG WEBHOOK URL DEFINED!" . PHP_EOL;
+        echo "\033[33m[WARNING] Please set a discord webhook url to view logs of the queue processing." . PHP_EOL;
+        echo "\033[39m" . PHP_EOL;
+    }
+    $headers = [ 'Content-Type: application/json; charset=utf-8' ];
+    $POST = [ 'username' => 'Queue logs', 'content' => $message ];
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($POST));
+    $response   = curl_exec($ch);
+}
 echo "[INFO/loader] Fetching the servers in queue...\n";
 $queue = mysqli_query($cpconn, "SELECT * FROM servers_queue ORDER BY type DESC");
 echo "[INFO/loader] " . $queue->num_rows . " servers in queue!\n";
 echo "\033[32m[INFO/loader] Processing started!\n";
 foreach($queue as $server) {
+    $i++;
     echo "\033[39m"; // RESET COLOR
     $time = time();
     $date = date("d:m:y h:i:s");
@@ -17,6 +43,7 @@ foreach($queue as $server) {
     $locationd = mysqli_query($cpconn, "SELECT * FROM locations WHERE id = '" . mysqli_real_escape_string($cpconn, $location) . "'");
     if ($locationd->num_rows == 0) {
         echo "\033[31m[WARNING] Location does not exist." . PHP_EOL;
+        logQueue("[$i/" . $queue->num_rows . "] There was an error while creating the server ``" . $server['name'] . "``! **The location provided in the queue table doesn't exist!**");
         continue;
     }
     $locationd = $locationd->fetch_assoc();
@@ -26,6 +53,7 @@ foreach($queue as $server) {
     if ($slots_used >= $slots_all) {
         if ($server['type'] != "2") {
             echo "\033[31m[INFO] No slots available to create server " . $server['name'] . PHP_EOL;
+            $nodesFull++;
             continue;
         }
 
@@ -72,6 +100,8 @@ foreach($queue as $server) {
             'SPONGE_VERSION' => '1.12.2-7.3.0',
             // VANILLA
             'VANILLA_VERSION' => 'latest',
+            'NUKKIT_VERSION' => 'latest',
+            'VERSION' => 'pm4',
             // PURPUR
             'MINECRAFT_VERSION' => 'latest',
             // BEDROCK
@@ -94,13 +124,16 @@ foreach($queue as $server) {
             'MUMBLE_VERSION' => 'latest',
             // PYTHON
             'REQUIREMENTS_FILE' => 'requirements.txt',
+            // GO
+            'GO_PACKAGE' => 'changeme',
+            'EXECUTABLE' => 'changeme',
         ),
         'limits' => array(
             'memory' => $server['ram'],
             'swap' => $server['ram'],
             'disk' => $server['disk'],
             'io' => 500,
-            'cpu' => $server['cpu']*100
+            'cpu' => $server['cpu']
         ),
         'feature_limits' => array(
             "databases" => $server['databases'],
@@ -126,6 +159,7 @@ foreach($queue as $server) {
     $ee = json_decode($result, true);
     if (!isset($ee['object'])) {
         echo "\033[31m[ERROR $date] Server failed to create, error details are as follows.\nCode: " . $ee['errors'][0]['code'] . "\nDetail: " . $ee['errors'][0]['detail'] . PHP_EOL;
+        logQueue("[$i/" . $queue->num_rows . "] There was an error while creating the server ``" . $server['name'] . "``! ```" . $ee['errors'][0]['detail'] . "```");
         continue;
     }
     $identifier = $ee['attributes']['identifier'];
@@ -136,11 +170,15 @@ foreach($queue as $server) {
     $created = date("d-m-y", time());
     if (mysqli_query($cpconn, "INSERT INTO servers (`pid`, `uid`, `location`, `timestamp`, `created`) VALUES ($pid, $uid, $location, $time, '$created')")) {
         echo "\033[32m[SUCCESS] The server called " . $server['name'] . " got created.";
+        logQueue("[$i/" . $queue->num_rows . "] The server called ``" . $server['name'] . "`` got created.");
     }
     else {
         echo "\033[31m[INFO] Error inserting server into db." . PHP_EOL;
     }
-    
 }
 $timeExecuted = time() - $timeAtStart;
 echo "\n\n\033[32m[END] Queue handler ran in $timeExecuted seconds.\033[39m" . PHP_EOL;
+$queueAfter = mysqli_query($cpconn, "SELECT * FROM servers_queue ORDER BY type DESC");
+if ($timeExecuted >= 1) {
+    logQueue(":green_circle: The queue has been processed in **$timeExecuted seconds.**\n**Servers in queue before:** " . $queue->num_rows . "\n**Servers in queue after:** " . $queueAfter->num_rows . "\n**Servers not created due to full nodes:** " . $nodesFull);
+}
