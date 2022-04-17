@@ -1,10 +1,10 @@
 -- phpMyAdmin SQL Dump
--- version 5.1.0
+-- version 5.0.4
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : localhost
--- Généré le : ven. 06 août 2021 à 18:46
--- Version du serveur :  10.3.29-MariaDB-0ubuntu0.20.04.1
+-- Généré le : Dim 17 avr. 2022 à 23:59
+-- Version du serveur :  5.7.34-log
 -- Version de PHP : 7.4.21
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `boosters` (
   `id` int(11) NOT NULL,
   `uid` varchar(20) NOT NULL,
-  `lastcheck` bigint(20) NOT NULL DEFAULT 1624711478
+  `lastcheck` bigint(20) NOT NULL DEFAULT '1624711478'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -44,7 +44,7 @@ CREATE TABLE `coupons` (
   `code` text NOT NULL,
   `discount` decimal(65,0) DEFAULT NULL,
   `percentage_discount` decimal(65,0) DEFAULT NULL,
-  `uid` text DEFAULT NULL,
+  `uid` text,
   `uses` int(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -70,7 +70,7 @@ CREATE TABLE `domains` (
 CREATE TABLE `eggs` (
   `id` int(11) NOT NULL,
   `egg` int(255) NOT NULL,
-  `nest` int(255) NOT NULL DEFAULT 1,
+  `nest` int(255) NOT NULL DEFAULT '1',
   `icon` text NOT NULL,
   `category` text NOT NULL,
   `name` text NOT NULL
@@ -168,7 +168,7 @@ CREATE TABLE `servers` (
   `uid` varchar(255) NOT NULL,
   `location` int(255) NOT NULL,
   `timestamp` varchar(255) NOT NULL,
-  `created` text DEFAULT NULL
+  `created` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -190,7 +190,7 @@ CREATE TABLE `servers_queue` (
   `type` int(255) NOT NULL,
   `egg` int(255) NOT NULL,
   `puid` varchar(255) NOT NULL,
-  `created` text DEFAULT NULL
+  `created` text
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -221,14 +221,14 @@ CREATE TABLE `users` (
   `discord_name` varchar(255) DEFAULT NULL,
   `discord_email` varchar(255) DEFAULT NULL,
   `avatar` text NOT NULL,
-  `coins` decimal(65,2) NOT NULL DEFAULT 0.00 COMMENT 'Change this for default plan',
-  `balance` decimal(65,2) NOT NULL DEFAULT 0.00 COMMENT 'Change this for default plan',
-  `memory` int(255) NOT NULL DEFAULT 2048 COMMENT 'Change this for default plan',
-  `disk_space` int(255) NOT NULL DEFAULT 10000 COMMENT 'Change this for default plan',
-  `ports` int(255) DEFAULT 1 COMMENT 'Change this for default plan',
-  `databases` int(255) DEFAULT 1 COMMENT 'Change this for default plan',
+  `coins` decimal(65,2) NOT NULL DEFAULT '0.00' COMMENT 'Change this for default plan',
+  `balance` decimal(65,2) NOT NULL DEFAULT '0.00' COMMENT 'Change this for default plan',
+  `memory` int(255) NOT NULL DEFAULT '2048' COMMENT 'Change this for default plan',
+  `disk_space` int(255) NOT NULL DEFAULT '10000' COMMENT 'Change this for default plan',
+  `ports` int(255) DEFAULT '1' COMMENT 'Change this for default plan',
+  `databases` int(255) DEFAULT '1' COMMENT 'Change this for default plan',
   `cpu` varchar(255) NOT NULL DEFAULT '60' COMMENT 'Change this for default plan',
-  `server_limit` int(255) NOT NULL DEFAULT 2 COMMENT 'Change this for default plan',
+  `server_limit` int(255) NOT NULL DEFAULT '2' COMMENT 'Change this for default plan',
   `panel_username` varchar(255) NOT NULL,
   `panel_password` varchar(255) NOT NULL,
   `register_ip` text NOT NULL,
@@ -236,13 +236,13 @@ CREATE TABLE `users` (
   `created_at` int(255) NOT NULL,
   `last_login` text NOT NULL,
   `locale` varchar(50) NOT NULL,
-  `banned` tinyint(4) NOT NULL DEFAULT 0,
-  `banned_reason` longtext DEFAULT NULL,
-  `staff` tinyint(4) NOT NULL DEFAULT 0,
-  `spa_perm_level` tinyint(4) NOT NULL DEFAULT 0,
-  `spa` tinyint(4) NOT NULL DEFAULT 0,
-  `mce_limit` int(255) NOT NULL DEFAULT 0,
-  `registered` text DEFAULT NULL
+  `banned` tinyint(4) NOT NULL DEFAULT '0',
+  `banned_reason` longtext,
+  `staff` tinyint(4) NOT NULL DEFAULT '0',
+  `spa_perm_level` tinyint(4) NOT NULL DEFAULT '0',
+  `spa` tinyint(4) NOT NULL DEFAULT '0',
+  `mce_limit` int(255) NOT NULL DEFAULT '0',
+  `registered` text
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
