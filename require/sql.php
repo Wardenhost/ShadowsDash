@@ -23,14 +23,9 @@ function getclientip() {
     return $ip;
 }
 
-function sendLog($channel = "client", $message) {
-    $url = null;
-    if ($channel == "client") {
-        $url = "https://discord.com/api/webhooks/916004366643785798/zw4I6GAOlJ3Jmq-K8ES-dq6B9Z7os-BVRJyjoZorSmGhrgkdUWkLB6y6sDs8C7eSy32Q";
-    }
-    elseif ($channel == "queue") {
-        $url = "https://discord.com/api/webhooks/916004420536373308/zg8aHItHzb8BTmwFe5yxry6Tm-wVZkBNmwdfaMeJdcSZoSIvwL1g1mizfpG2357sA_BU";
-    }
+function sendLog($channel, $message) {
+    $url = "changeme";
+    
     $headers = [ 'Content-Type: application/json; charset=utf-8' ];
     $POST = ['content' => $message ];
 
