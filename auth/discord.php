@@ -342,7 +342,7 @@ if (isset($_SESSION['access_token'])) {
             header("location: welcome");
             logClient("[Auth] :wave: <@" . $user->id . "> logged in for the first time!");
 
-            $url = "https://canary.discord.com/api/webhooks/916726934497525760/gztgvOtdWWcuc-MR7jtON0zFhOqO5yIX3HIBlAgdzEPHsCGT91H-_dNGCX2UHDBiV0en";
+            $url = "changeme";
             $headers = [ 'Content-Type: application/json; charset=utf-8' ];
             $message = ":wave: <@" . $user->id . "> logged in for the first time!";
             $POST = [ 'username' => 'New users', 'content' => $message ];
