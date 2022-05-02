@@ -372,7 +372,7 @@ if (isset($_SESSION['access_token'])) {
     function apiRequest($url, $post = FALSE, $headers = array())
     {
         try {
-            $ch = curl_init($url);
+            $_SESSION['error'] = "There was an error while signing up. Is our game panel down? " . $error;
             curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 
